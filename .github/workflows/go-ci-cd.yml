@@ -19,20 +19,20 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.21'
+          go-version: '1.24'
           
       - name: Run linters
         run: |
-          echo "🔍 Running code analysis..."
+          echo "Running code analysis..."
           go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
           golangci-lint run ./... --timeout 3m
-          echo "✅ Linting completed successfully"
+          echo "Linting completed successfully"
           
       - name: Run tests
         run: |
-          echo "🧪 Running tests..."
+          echo "Running tests..."
           go test -v ./...
-          echo "✅ Tests passed"
+          echo "Tests passed"
 
   docker-publish:
     needs: test
@@ -41,8 +41,8 @@ jobs:
     steps:
       - name: Print tag info
         run: |
-          echo "🛠️ Triggered by tag: $GITHUB_REF"
-          echo "📦 Image name: ${{ env.IMAGE_NAME }}"
+          echo "Triggered by tag: $GITHUB_REF"
+          echo "Image name: ${{ env.IMAGE_NAME }}"
           
       - uses: actions/checkout@v3
       
@@ -61,7 +61,7 @@ jobs:
         id: version
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
-          echo "✅ Detected version: $VERSION"
+          echo "Detected version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           
       - name: Build and push
@@ -78,9 +78,9 @@ jobs:
           
       - name: Verify push
         run: |
-          echo "🎉 Successfully pushed Docker images:"
+          echo " Successfully pushed Docker images:"
           echo " - ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest"
           echo " - ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}"
-          echo "📌 Image labels:"
+          echo " Image labels:"
           echo " - version=${{ steps.version.outputs.version }}"
           echo " - source=$GITHUB_REPOSITORY"
