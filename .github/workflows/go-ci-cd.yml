@@ -19,14 +19,18 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.24'
+          go-version: '1.21'
           
       - name: Run linters
         run: |
-          echo "Running code analysis..."
+          echo "Installing linters..."
           go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-          golangci-lint run ./... --timeout 3m
-          echo "Linting completed successfully"
+          go install github.com/gordonklaus/ineffassign@latest
+          
+          echo "Running static analysis..."
+          ineffassign ./...
+          golangci-lint run ./... --timeout 3m --enable=govet,unused,staticcheck
+          echo "Linting completed"
           
       - name: Run tests
         run: |
@@ -54,8 +58,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
           
       - name: Extract version from tag
         id: version
@@ -78,7 +80,7 @@ jobs:
           
       - name: Verify push
         run: |
-          echo " Successfully pushed Docker images:"
+          echo "🎉 Successfully pushed Docker images:"
           echo " - ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest"
           echo " - ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}"
           echo " Image labels:"
