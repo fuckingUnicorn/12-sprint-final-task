@@ -15,23 +15,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
           go-version: '1.21'
-          
+
       - name: Run linters
         run: |
           echo "Installing linters..."
           go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
           go install github.com/gordonklaus/ineffassign@latest
-          
-          echo "Running static analysis..."
+
+          echo "🛠️ Running static analysis..."
           ineffassign ./...
           golangci-lint run ./... --timeout 3m --enable=govet,unused,staticcheck
           echo "Linting completed"
-          
+
       - name: Run tests
         run: |
           echo "Running tests..."
@@ -47,25 +47,25 @@ jobs:
         run: |
           echo "Triggered by tag: $GITHUB_REF"
           echo "Image name: ${{ env.IMAGE_NAME }}"
-          
+
       - uses: actions/checkout@v3
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-          
+
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
-          
+
       - name: Extract version from tag
         id: version
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "Detected version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          
+
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
@@ -77,10 +77,10 @@ jobs:
           labels: |
             org.opencontainers.image.version=${{ steps.version.outputs.version }}
             org.opencontainers.image.source=$GITHUB_REPOSITORY
-          
+
       - name: Verify push
         run: |
-          echo "🎉 Successfully pushed Docker images:"
+          echo " Successfully pushed Docker images:"
           echo " - ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest"
           echo " - ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}"
           echo " Image labels:"
