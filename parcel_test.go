@@ -32,29 +32,28 @@ func getTestParcel() Parcel {
 func TestAddGetDelete(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db")
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
 	defer db.Close()
 	store := NewParcelStore(db)
 	parcel := getTestParcel()
 
 	// add
-	parcel.Number, err = store.Add(parcel)
-
+	id, err := store.Add(parcel)
 	require.NoError(t, err)
-	require.NotEmpty(t, parcel.Number)
+	require.NotEmpty(t, id)
+	parcel.Number = id
 
 	// get
 	stored, err := store.Get(parcel.Number)
-
 	require.NoError(t, err)
 	require.Equal(t, parcel, stored)
 
 	// delete
 	err = store.Delete(parcel.Number)
+	require.NoError(t, err)
 
-	stored, err = store.Get(parcel.Number)
+	// check that it's gone
+	_, err = store.Get(parcel.Number)
 	require.Equal(t, sql.ErrNoRows, err)
 }
 
